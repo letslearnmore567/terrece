@@ -6,6 +6,7 @@ import {
   useGetAlerts, 
   useGetRecommendations,
   useCreateDemoReading,
+  useGetPriceSummary,
   getGetLatestReadingQueryKey,
   getGetReadingsQueryKey,
   getGetAlertsQueryKey,
@@ -24,7 +25,11 @@ import {
   AlertTriangle,
   Lightbulb,
   ArrowRight,
-  Activity
+  Activity,
+  ShoppingBasket,
+  TrendingUp,
+  TrendingDown,
+  Minus
 } from "lucide-react";
 import { Link } from "wouter";
 import { formatShortDate, cn } from "@/lib/utils";
@@ -48,6 +53,8 @@ export default function Dashboard() {
       }
     }
   });
+
+  const { data: priceSummary = [] } = useGetPriceSummary({ query: { retry: false } });
 
   const activeCrops = crops?.filter(c => c.growthStage !== 'harvested') || [];
   const topAlerts = alerts?.slice(0, 3) || [];
@@ -251,6 +258,55 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Crop Prices Widget */}
+      {priceSummary.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <ShoppingBasket className="w-5 h-5 text-primary" />
+                Market Prices
+              </CardTitle>
+              <CardDescription>Latest prices from your records</CardDescription>
+            </div>
+            <Link href="/prices">
+              <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                View All <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {priceSummary.slice(0, 5).map(item => {
+                const isRising = item.trend === "rising";
+                const isFalling = item.trend === "falling";
+                const TrendIcon = isRising ? TrendingUp : isFalling ? TrendingDown : Minus;
+                return (
+                  <Link key={item.cropName} href="/prices">
+                    <div className={cn(
+                      "p-3 rounded-xl border transition-colors cursor-pointer",
+                      isRising ? "bg-green-50 border-green-200" :
+                      isFalling ? "bg-red-50 border-red-200" :
+                      "bg-secondary border-border"
+                    )}>
+                      <p className="text-xs font-semibold text-muted-foreground truncate">{item.cropName}</p>
+                      <p className="text-lg font-bold text-foreground mt-1">₹{item.latestPrice.toFixed(2)}</p>
+                      <div className={cn(
+                        "flex items-center gap-1 text-xs font-medium mt-1",
+                        isRising ? "text-green-700" : isFalling ? "text-red-700" : "text-muted-foreground"
+                      )}>
+                        <TrendIcon className="w-3 h-3" />
+                        {isRising ? "Rising" : isFalling ? "Falling" : "Stable"}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

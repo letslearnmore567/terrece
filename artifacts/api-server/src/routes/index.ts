@@ -8,6 +8,7 @@ import alertsRouter from "./alerts.js";
 import recommendationsRouter from "./recommendations.js";
 import devicesRouter from "./devices.js";
 import analyticsRouter from "./analytics.js";
+import pricesRouter from "./prices.js";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(alertsRouter);
 router.use(recommendationsRouter);
 router.use(devicesRouter);
 router.use(analyticsRouter);
+router.use(pricesRouter);
 
 export default router;

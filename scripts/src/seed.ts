@@ -1,4 +1,4 @@
-import { db, usersTable, farmsTable, cropsTable, devicesTable, sensorReadingsTable, alertsTable, recommendationsTable } from "@workspace/db";
+import { db, usersTable, farmsTable, cropsTable, devicesTable, sensorReadingsTable, alertsTable, recommendationsTable, priceDataTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -131,6 +131,32 @@ async function seed() {
     },
   ]);
   console.log("Created recommendations");
+
+  // Seed price data (simulate 2 weeks of entries for 3 crops)
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const priceEntries = [
+    // Tomato - rising trend
+    { userId: user.id, cropName: "Tomato", pricePerKg: 28.00, marketName: "Shimla Mandi", unit: "kg", notes: "Good quality", createdAt: new Date(now - 13 * day) },
+    { userId: user.id, cropName: "Tomato", pricePerKg: 29.50, marketName: "Shimla Mandi", unit: "kg", notes: null, createdAt: new Date(now - 10 * day) },
+    { userId: user.id, cropName: "Tomato", pricePerKg: 31.00, marketName: "Shimla Mandi", unit: "kg", notes: "High demand", createdAt: new Date(now - 7 * day) },
+    { userId: user.id, cropName: "Tomato", pricePerKg: 33.50, marketName: "Shimla Mandi", unit: "kg", notes: null, createdAt: new Date(now - 4 * day) },
+    { userId: user.id, cropName: "Tomato", pricePerKg: 36.00, marketName: "Shimla Mandi", unit: "kg", notes: "Festival season", createdAt: new Date(now - 1 * day) },
+    // Potato - stable trend
+    { userId: user.id, cropName: "Potato", pricePerKg: 18.00, marketName: "Local Mandi", unit: "kg", notes: null, createdAt: new Date(now - 12 * day) },
+    { userId: user.id, cropName: "Potato", pricePerKg: 17.50, marketName: "Local Mandi", unit: "kg", notes: null, createdAt: new Date(now - 9 * day) },
+    { userId: user.id, cropName: "Potato", pricePerKg: 18.50, marketName: "Local Mandi", unit: "kg", notes: null, createdAt: new Date(now - 6 * day) },
+    { userId: user.id, cropName: "Potato", pricePerKg: 18.00, marketName: "Local Mandi", unit: "kg", notes: null, createdAt: new Date(now - 2 * day) },
+    // Capsicum - falling trend
+    { userId: user.id, cropName: "Capsicum", pricePerKg: 55.00, marketName: "Shimla Mandi", unit: "kg", notes: "Premium quality", createdAt: new Date(now - 11 * day) },
+    { userId: user.id, cropName: "Capsicum", pricePerKg: 50.00, marketName: "Shimla Mandi", unit: "kg", notes: null, createdAt: new Date(now - 8 * day) },
+    { userId: user.id, cropName: "Capsicum", pricePerKg: 46.00, marketName: "Shimla Mandi", unit: "kg", notes: "Oversupply", createdAt: new Date(now - 5 * day) },
+    { userId: user.id, cropName: "Capsicum", pricePerKg: 42.00, marketName: "Shimla Mandi", unit: "kg", notes: null, createdAt: new Date(now - 2 * day) },
+  ];
+
+  await db.insert(priceDataTable).values(priceEntries);
+  console.log("Created price entries");
+
   console.log("Seed complete!");
   process.exit(0);
 }

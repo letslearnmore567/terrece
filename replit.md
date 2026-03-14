@@ -49,6 +49,7 @@ artifacts-monorepo/
 8. **Analytics** - Daily/Weekly/Monthly trend charts with Recharts
 9. **Device Management** - Register and track IoT devices
 10. **Settings/Profile** - View and update user/farm info
+11. **Crop Price Analytics** - Manual market price entry, trend detection (rising/falling/stable), SMA-based price prediction (next day + next week), Recharts line chart with forecast overlay, dashboard widget
 
 ## IoT Integration
 

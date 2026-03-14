@@ -404,3 +404,72 @@ export const GetAnalyticsSummaryResponse = zod.object({
   totalReadings: zod.number(),
   activeAlerts: zod.number(),
 });
+
+/**
+ * @summary List price entries
+ */
+export const GetPricesQueryParams = zod.object({
+  cropName: zod.coerce.string().optional(),
+  limit: zod.coerce.number().optional(),
+});
+
+export const GetPricesResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  cropName: zod.string(),
+  pricePerKg: zod.number(),
+  marketName: zod.string(),
+  unit: zod.string(),
+  notes: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+export const GetPricesResponse = zod.array(GetPricesResponseItem);
+
+/**
+ * @summary Add a price entry
+ */
+export const CreatePriceEntryBody = zod.object({
+  cropName: zod.string(),
+  pricePerKg: zod.number(),
+  marketName: zod.string().optional(),
+  unit: zod.string().optional(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get price summary with trends for all crops
+ */
+export const GetPriceSummaryResponseItem = zod.object({
+  cropName: zod.string(),
+  latestPrice: zod.number(),
+  marketName: zod.string(),
+  trend: zod.string(),
+  trendPercent: zod.number(),
+  entryCount: zod.number(),
+});
+export const GetPriceSummaryResponse = zod.array(GetPriceSummaryResponseItem);
+
+/**
+ * @summary Get price prediction for a crop
+ */
+export const GetPricePredictionParams = zod.object({
+  cropName: zod.coerce.string(),
+});
+
+export const GetPricePredictionResponse = zod.object({
+  cropName: zod.string(),
+  currentPrice: zod.number(),
+  nextDayPrice: zod.number(),
+  nextWeekPrice: zod.number(),
+  trend: zod.string(),
+  trendPercent: zod.number(),
+  dataPoints: zod.number(),
+  note: zod.string(),
+});
+
+/**
+ * @summary Delete a price entry
+ */
+export const DeletePriceEntryParams = zod.object({
+  id: zod.coerce.number(),
+});

@@ -25,6 +25,8 @@ tags:
     description: Device management
   - name: analytics
     description: Analytics
+  - name: prices
+    description: Crop price analytics
 paths:
   /healthz:
     get:
@@ -523,6 +525,108 @@ paths:
               schema:
                 $ref: "#/components/schemas/AnalyticsSummary"
 
+  /prices:
+    get:
+      operationId: getPrices
+      tags: [prices]
+      summary: List price entries
+      parameters:
+        - name: cropName
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of price entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceEntry"
+    post:
+      operationId: createPriceEntry
+      tags: [prices]
+      summary: Add a price entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePriceEntryBody"
+      responses:
+        "201":
+          description: Price entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceEntry"
+
+  /prices/summary:
+    get:
+      operationId: getPriceSummary
+      tags: [prices]
+      summary: Get price summary with trends for all crops
+      responses:
+        "200":
+          description: Price summary per crop
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceSummaryItem"
+
+  /prices/prediction/{cropName}:
+    get:
+      operationId: getPricePrediction
+      tags: [prices]
+      summary: Get price prediction for a crop
+      parameters:
+        - name: cropName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Price prediction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricePrediction"
+        "404":
+          description: No data for this crop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /prices/{id}:
+    delete:
+      operationId: deletePriceEntry
+      tags: [prices]
+      summary: Delete a price entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -960,3 +1064,101 @@ components:
         - cropNotes
         - totalReadings
         - activeAlerts
+
+    PriceEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        cropName:
+          type: string
+        pricePerKg:
+          type: number
+        marketName:
+          type: string
+        unit:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - cropName
+        - pricePerKg
+        - marketName
+        - unit
+        - createdAt
+
+    CreatePriceEntryBody:
+      type: object
+      properties:
+        cropName:
+          type: string
+        pricePerKg:
+          type: number
+        marketName:
+          type: string
+        unit:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required:
+        - cropName
+        - pricePerKg
+
+    PricePrediction:
+      type: object
+      properties:
+        cropName:
+          type: string
+        currentPrice:
+          type: number
+        nextDayPrice:
+          type: number
+        nextWeekPrice:
+          type: number
+        trend:
+          type: string
+        trendPercent:
+          type: number
+        dataPoints:
+          type: integer
+        note:
+          type: string
+      required:
+        - cropName
+        - currentPrice
+        - nextDayPrice
+        - nextWeekPrice
+        - trend
+        - trendPercent
+        - dataPoints
+        - note
+
+    PriceSummaryItem:
+      type: object
+      properties:
+        cropName:
+          type: string
+        latestPrice:
+          type: number
+        marketName:
+          type: string
+        trend:
+          type: string
+        trendPercent:
+          type: number
+        entryCount:
+          type: integer
+      required:
+        - cropName
+        - latestPrice
+        - marketName
+        - trend
+        - trendPercent
+        - entryCount

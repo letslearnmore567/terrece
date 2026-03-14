@@ -21,6 +21,7 @@ import Alerts from "@/pages/alerts";
 import Analytics from "@/pages/analytics";
 import Devices from "@/pages/devices";
 import Settings from "@/pages/settings";
+import Prices from "@/pages/prices";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
       <Route path="/devices" component={() => <ProtectedRoute component={Devices} />} />
       <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
+      <Route path="/prices" component={() => <ProtectedRoute component={Prices} />} />
 
       <Route component={NotFound} />
     </Switch>

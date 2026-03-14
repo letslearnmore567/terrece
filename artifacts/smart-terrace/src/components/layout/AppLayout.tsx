@@ -13,7 +13,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  Map
+  Map,
+  ShoppingBasket
 } from "lucide-react";
 import { useGetFarm } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: "/alerts", label: "Alerts", icon: BellRing },
   { href: "/analytics", label: "Analytics", icon: LineChart },
   { href: "/devices", label: "Devices", icon: Cpu },
+  { href: "/prices", label: "Crop Prices", icon: ShoppingBasket },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

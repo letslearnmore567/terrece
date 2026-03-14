@@ -197,10 +197,56 @@ export interface AnalyticsSummary {
   activeAlerts: number;
 }
 
+export interface PriceEntry {
+  id: number;
+  userId: number;
+  cropName: string;
+  pricePerKg: number;
+  marketName: string;
+  unit: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreatePriceEntryBody {
+  cropName: string;
+  pricePerKg: number;
+  marketName?: string;
+  unit?: string;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface PricePrediction {
+  cropName: string;
+  currentPrice: number;
+  nextDayPrice: number;
+  nextWeekPrice: number;
+  trend: string;
+  trendPercent: number;
+  dataPoints: number;
+  note: string;
+}
+
+export interface PriceSummaryItem {
+  cropName: string;
+  latestPrice: number;
+  marketName: string;
+  trend: string;
+  trendPercent: number;
+  entryCount: number;
+}
+
 export type GetReadingsParams = {
   limit?: number;
 };
 
 export type GetAlertsParams = {
   status?: string;
+};
+
+export type GetPricesParams = {
+  cropName?: string;
+  limit?: number;
 };

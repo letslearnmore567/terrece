@@ -21,6 +21,7 @@ import type {
   AnalyticsData,
   AnalyticsSummary,
   AuthResponse,
+  CreatePriceEntryBody,
   Crop,
   CropBody,
   Device,
@@ -30,9 +31,13 @@ import type {
   Farm,
   FarmBody,
   GetAlertsParams,
+  GetPricesParams,
   GetReadingsParams,
   HealthStatus,
   LoginBody,
+  PriceEntry,
+  PricePrediction,
+  PriceSummaryItem,
   ReadingBody,
   Recommendation,
   RegisterBody,
@@ -2219,3 +2224,431 @@ export function useGetAnalyticsSummary<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List price entries
+ */
+export const getGetPricesUrl = (params?: GetPricesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/prices?${stringifiedParams}`
+    : `/api/prices`;
+};
+
+export const getPrices = async (
+  params?: GetPricesParams,
+  options?: RequestInit,
+): Promise<PriceEntry[]> => {
+  return customFetch<PriceEntry[]>(getGetPricesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPricesQueryKey = (params?: GetPricesParams) => {
+  return [`/api/prices`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetPricesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPrices>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPricesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrices>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPricesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPrices>>> = ({
+    signal,
+  }) => getPrices(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPrices>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPricesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPrices>>
+>;
+export type GetPricesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List price entries
+ */
+
+export function useGetPrices<
+  TData = Awaited<ReturnType<typeof getPrices>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetPricesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPrices>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPricesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a price entry
+ */
+export const getCreatePriceEntryUrl = () => {
+  return `/api/prices`;
+};
+
+export const createPriceEntry = async (
+  createPriceEntryBody: CreatePriceEntryBody,
+  options?: RequestInit,
+): Promise<PriceEntry> => {
+  return customFetch<PriceEntry>(getCreatePriceEntryUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createPriceEntryBody),
+  });
+};
+
+export const getCreatePriceEntryMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPriceEntry>>,
+    TError,
+    { data: BodyType<CreatePriceEntryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createPriceEntry>>,
+  TError,
+  { data: BodyType<CreatePriceEntryBody> },
+  TContext
+> => {
+  const mutationKey = ["createPriceEntry"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createPriceEntry>>,
+    { data: BodyType<CreatePriceEntryBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createPriceEntry(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreatePriceEntryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createPriceEntry>>
+>;
+export type CreatePriceEntryMutationBody = BodyType<CreatePriceEntryBody>;
+export type CreatePriceEntryMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add a price entry
+ */
+export const useCreatePriceEntry = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPriceEntry>>,
+    TError,
+    { data: BodyType<CreatePriceEntryBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createPriceEntry>>,
+  TError,
+  { data: BodyType<CreatePriceEntryBody> },
+  TContext
+> => {
+  return useMutation(getCreatePriceEntryMutationOptions(options));
+};
+
+/**
+ * @summary Get price summary with trends for all crops
+ */
+export const getGetPriceSummaryUrl = () => {
+  return `/api/prices/summary`;
+};
+
+export const getPriceSummary = async (
+  options?: RequestInit,
+): Promise<PriceSummaryItem[]> => {
+  return customFetch<PriceSummaryItem[]>(getGetPriceSummaryUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPriceSummaryQueryKey = () => {
+  return [`/api/prices/summary`] as const;
+};
+
+export const getGetPriceSummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPriceSummary>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPriceSummary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPriceSummaryQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPriceSummary>>> = ({
+    signal,
+  }) => getPriceSummary({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPriceSummary>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPriceSummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPriceSummary>>
+>;
+export type GetPriceSummaryQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get price summary with trends for all crops
+ */
+
+export function useGetPriceSummary<
+  TData = Awaited<ReturnType<typeof getPriceSummary>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPriceSummary>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPriceSummaryQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get price prediction for a crop
+ */
+export const getGetPricePredictionUrl = (cropName: string) => {
+  return `/api/prices/prediction/${cropName}`;
+};
+
+export const getPricePrediction = async (
+  cropName: string,
+  options?: RequestInit,
+): Promise<PricePrediction> => {
+  return customFetch<PricePrediction>(getGetPricePredictionUrl(cropName), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetPricePredictionQueryKey = (cropName: string) => {
+  return [`/api/prices/prediction/${cropName}`] as const;
+};
+
+export const getGetPricePredictionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPricePrediction>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  cropName: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPricePrediction>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPricePredictionQueryKey(cropName);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPricePrediction>>
+  > = ({ signal }) =>
+    getPricePrediction(cropName, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!cropName,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPricePrediction>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPricePredictionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPricePrediction>>
+>;
+export type GetPricePredictionQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get price prediction for a crop
+ */
+
+export function useGetPricePrediction<
+  TData = Awaited<ReturnType<typeof getPricePrediction>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  cropName: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getPricePrediction>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPricePredictionQueryOptions(cropName, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Delete a price entry
+ */
+export const getDeletePriceEntryUrl = (id: number) => {
+  return `/api/prices/${id}`;
+};
+
+export const deletePriceEntry = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeletePriceEntryUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeletePriceEntryMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePriceEntry>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deletePriceEntry>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deletePriceEntry"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deletePriceEntry>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deletePriceEntry(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeletePriceEntryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deletePriceEntry>>
+>;
+
+export type DeletePriceEntryMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a price entry
+ */
+export const useDeletePriceEntry = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePriceEntry>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deletePriceEntry>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeletePriceEntryMutationOptions(options));
+};
